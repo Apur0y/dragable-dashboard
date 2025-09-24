@@ -70,7 +70,7 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
   // Generate column headers
   const columnHeaders = Array.from({ length: totalColumns }, (_, i) => {
     if (zoomLevel === 1) {
-      return (i % 30) + 1 // Days 1-30
+      return (i % 30) + 1 
     } else {
       const dayOfYear = (i % 365) + 1
       const year = Math.floor(i / 365) + 1
