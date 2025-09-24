@@ -51,7 +51,7 @@ export default function Dashboard() {
           {barInfo.length>1 &&  
           <button
             onClick={() => handleDeleteBar(bar.id)}
-            className="bg-red-200 hover:bg-red-300 px-2 py-1 rounded text-sm absolute right-0 m-3"
+            className="bg-red-200 hover:bg-red-300 px-2 py-1 rounded text-sm absolute right-0 m-3 cursor-pointer"
           >
             ✕
           </button>}
