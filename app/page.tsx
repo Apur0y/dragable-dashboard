@@ -13,60 +13,66 @@ export default function Dashboard() {
     { id: "3", rows: 1, columns: 9, title: "Task C" },
     { id: "4", rows: 1, columns: 4, title: "Task D" },
   ]);
-  
- const [barInfo, setBarInfo] = useState([
-    { id: 1, title: "Dashboard Cards" }
-  ])
 
-
+  const [barInfo, setBarInfo] = useState([
+    { id: 1, title: "Dashboard Cards", cards: [  { id: "1", rows: 1, columns: 5, title: "Task A" }] as Card[] },
+  ]);
 
   const [placedCards, setPlacedCards] = useState<
     Array<Card & { gridRow: number; gridCol: number }>
   >([]);
   const [zoomLevel, setZoomLevel] = useState(1);
 
-    const handleAddBar = () => {
+  const handleAddBar = () => {
     const newBar = {
       id: Date.now(), // unique id
       title: `New Bar ${barInfo.length + 1}`,
-    }
-    setBarInfo([...barInfo, newBar])
-  }
+      cards: [] as Card[],
+    };
+    setBarInfo([...barInfo, newBar]);
+  };
 
   // ✅ Delete a bar
   const handleDeleteBar = (id: number) => {
-    setBarInfo(barInfo.filter(bar => bar.id !== id))
-  }
+    setBarInfo(barInfo.filter((bar) => bar.id !== id));
+  };
 
+  const handleAddCardToBar = (barId: number, card: Card) => {
+  setBarInfo(prev =>
+    prev.map(bar =>
+      bar.id === barId
+        ? { ...bar, cards: [...bar.cards, card] }
+        : bar
+    )
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Panel */}
-        <div className="relative flex">
-      {barInfo.map(bar => (
-        <div key={bar.id} className="flex  gap-2 relative">
-          <NewCardAdd bar={bar} cards={cards} setCards={setCards} />
+      <div className="relative flex">
+        {barInfo.map((bar) => (
+          <div key={bar.id} className="flex gap-2 relative">
+            <NewCardAdd bar={bar} onAddCard={handleAddCardToBar} />
+            {barInfo.length > 1 && (
+              <button
+                onClick={() => handleDeleteBar(bar.id)}
+                className="bg-red-200 hover:bg-red-300 px-2 py-1 rounded text-sm absolute right-0 m-3 cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
 
-          {barInfo.length>1 &&  
-          <button
-            onClick={() => handleDeleteBar(bar.id)}
-            className="bg-red-200 hover:bg-red-300 px-2 py-1 rounded text-sm absolute right-0 m-3 cursor-pointer"
-          >
-            ✕
-          </button>}
-        </div>
-      ))}
-
-      {/* Add new bar button */}
-      <button
-        onClick={handleAddBar}
-        className="absolute top-12 right-2 bg-gray-200 cursor-pointer hover:bg-gray-300 transition p-3 rounded-full"
-      >
-        +
-      </button>
-    </div>
-
-      
+        {/* Add new bar button */}
+        <button
+          onClick={handleAddBar}
+          className="absolute top-12 right-2 bg-gray-200 cursor-pointer hover:bg-gray-300 transition p-3 rounded-full"
+        >
+          +
+        </button>
+      </div>
 
       {/* Right Panel */}
       <div className="flex-1 flex flex-col">

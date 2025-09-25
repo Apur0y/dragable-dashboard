@@ -2,34 +2,44 @@ import React, { useState } from 'react'
 import CardPanel from './card-panel';
 import { Card } from '@/types/card';
 
-export default function NewCardAdd({setCards,cards,bar}:any) {
-      const [showInput, setShowInput] = useState(false);
-      const [newTitle, setNewTitle] = useState("");
-      const [newRows, setNewRows] = useState(1);
-      const [newCols, setNewCols] = useState(1);
+export default function NewCardAdd({setCards,cards,bar,onAddCard }:any) {
+   const [showInput, setShowInput] = useState(false);
+   const [title,setTitle]=useState(false)
+  const [newTitle, setNewTitle] = useState("");
+  const [newRows, setNewRows] = useState(1);
+  const [newCols, setNewCols] = useState(1);
 
-        const handleAddCard = () => {
+  const handleAddCard = () => {
     if (!newTitle.trim()) return;
 
     const newCard: Card = {
-      id: Date.now().toString(), // unique id
+      id: Date.now().toString(),
       rows: newRows,
       columns: newCols,
       title: newTitle,
     };
 
-    setCards([...cards, newCard]);
+    onAddCard(bar.id, newCard); // ✅ pass card to parent
     setNewTitle("");
     setShowInput(false);
   };
+  console.log("This sis naj", bar.cards);
 
   return (
     <div>
         <div className="md:min-w-80  bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200 ">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <div
+          onDoubleClick={()=>setTitle(!title)}
+          
+          >
+          {
+            title? <input type='text' defaultValue={bar.title} className='border rounded text-lg font-semibold'/> :<h1 className="text-xl font-semibold text-gray-900">
             {bar.title}
           </h1>
+          }
+          </div>
+          
           <p className="text-sm text-gray-600 mt-1">
             Drag cards to the calendar grid
           </p>
@@ -88,7 +98,7 @@ export default function NewCardAdd({setCards,cards,bar}:any) {
             </div>
           )}
         </div>
-        <CardPanel cards={cards} />
+        <CardPanel cards={ bar.cards} />
       </div>
     </div>
   )

@@ -38,45 +38,48 @@ export default function CalendarGrid({
     setDragOverCell(null);
   };
 
-  const handleDrop = (e: React.DragEvent, row: number, col: number) => {
-    e.preventDefault();
-    setDragOverCell(null);
+ const handleDrop = (e: React.DragEvent, row: number, col: number) => {
+  e.preventDefault();
+  setDragOverCell(null);
 
-    try {
-      const cardData = JSON.parse(
-        e.dataTransfer.getData("application/json")
-      ) as Card;
+  try {
+    const cardData = JSON.parse(
+      e.dataTransfer.getData("application/json")
+    ) as Card;
 
-      // Check if the card fits in the grid
-      if (
-        row + cardData.rows <= totalRows &&
-        col + cardData.columns <= totalColumns
-      ) {
-        // Check for overlaps with existing cards
-        const hasOverlap = placedCards.some((placedCard) => {
-          const cardEndRow = placedCard.gridRow + placedCard.rows;
-          const cardEndCol = placedCard.gridCol + placedCard.columns;
-          const newCardEndRow = row + cardData.rows;
-          const newCardEndCol = col + cardData.columns;
+    if (
+      row + cardData.rows <= totalRows &&
+      col + cardData.columns <= totalColumns
+    ) {
+      const newCardEndRow = row + cardData.rows;
+      const newCardEndCol = col + cardData.columns;
 
-          return !(
-            row >= cardEndRow ||
-            newCardEndRow <= placedCard.gridRow ||
-            col >= cardEndCol ||
-            newCardEndCol <= placedCard.gridCol
-          );
-        });
+      // 🔥 find overlaps
+      const overlappingCards = placedCards.filter((placedCard) => {
+        const cardEndRow = placedCard.gridRow + placedCard.rows;
+        const cardEndCol = placedCard.gridCol + placedCard.columns;
 
-        if (!hasOverlap) {
-          const placedCardWithUniqueId = { ...cardData, id: uuidv4() };
-          onCardPlace(placedCardWithUniqueId, row, col);
-        }
-      }
+        return !(
+          row >= cardEndRow ||
+          newCardEndRow <= placedCard.gridRow ||
+          col >= cardEndCol ||
+          newCardEndCol <= placedCard.gridCol
+        );
+      });
+
+      // 🔥 remove overlapped cards
+      overlappingCards.forEach((c) => onCardRemove(c.id));
+
+      // place new card with fresh ID
+      const placedCardWithUniqueId = { ...cardData, id: uuidv4() };
+      onCardPlace(placedCardWithUniqueId, row, col);
       handleCardDoubleClick(cardData.id);
-    } catch (error) {
-      console.error("Error parsing dropped card data:", error);
     }
-  };
+  } catch (error) {
+    console.error("Error parsing dropped card data:", error);
+  }
+};
+
 
   const handleCardDoubleClick = (cardId: string) => {
     onCardRemove(cardId);
