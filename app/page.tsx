@@ -8,10 +8,10 @@ import NewCardAdd from "@/components/new-card-add";
 
 export default function Dashboard() {
   const [cards, setCards] = useState<Card[]>([
-    { id: "1", rows: 1, columns: 3, title: "Task A" },
-    { id: "2", rows: 2, columns: 2, title: "Task B" },
-    { id: "3", rows: 1, columns: 4, title: "Task C" },
-    { id: "4", rows: 3, columns: 1, title: "Task D" },
+    { id: "1", rows: 1, columns: 5, title: "Task A" },
+    { id: "2", rows: 2, columns: 7, title: "Task B" },
+    { id: "3", rows: 1, columns: 9, title: "Task C" },
+    { id: "4", rows: 1, columns: 4, title: "Task D" },
   ]);
   
  const [barInfo, setBarInfo] = useState([

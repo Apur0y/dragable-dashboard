@@ -1,82 +1,102 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import type { Card } from "@/types/card"
-import { useState } from "react"
+import type React from "react";
+import { v4 as uuidv4 } from "uuid";
+import type { Card } from "@/types/card";
+import { useState } from "react";
 
 interface CalendarGridProps {
-  zoomLevel: number
-  placedCards: Array<Card & { gridRow: number; gridCol: number }>
-  onCardPlace: (card: Card, row: number, col: number) => void
-  onCardRemove: (cardId: string) => void
+  zoomLevel: number;
+  placedCards: Array<Card & { gridRow: number; gridCol: number }>;
+  onCardPlace: (card: Card, row: number, col: number) => void;
+  onCardRemove: (cardId: string) => void;
 }
 
-export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCardRemove }: CalendarGridProps) {
-  const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null)
+export default function CalendarGrid({
+  zoomLevel,
+  placedCards,
+  onCardPlace,
+  onCardRemove,
+}: CalendarGridProps) {
+  const [dragOverCell, setDragOverCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
 
   // Calculate grid dimensions based on zoom level
-  const totalColumns = Math.min(30 * zoomLevel, 1800) // Max 5 years worth of days
-  const totalRows = 20 // Fixed number of rows
-  const cellWidth = Math.max(40, 120 - (zoomLevel - 1) * 2) // Smaller cells when zoomed out
+  const totalColumns = Math.min(30 * zoomLevel, 1800); // Max 5 years worth of days
+  const totalRows = 20; // Fixed number of rows
+  const cellWidth = Math.max(40, 120 - (zoomLevel - 1) * 2); // Smaller cells when zoomed out
 
   const handleDragOver = (e: React.DragEvent, row: number, col: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "copy"
-    setDragOverCell({ row, col })
-  }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setDragOverCell({ row, col });
+  };
 
   const handleDragLeave = () => {
-    setDragOverCell(null)
-  }
+    setDragOverCell(null);
+  };
 
   const handleDrop = (e: React.DragEvent, row: number, col: number) => {
-    e.preventDefault()
-    setDragOverCell(null)
+    e.preventDefault();
+    setDragOverCell(null);
 
     try {
-      const cardData = JSON.parse(e.dataTransfer.getData("application/json")) as Card
+      const cardData = JSON.parse(
+        e.dataTransfer.getData("application/json")
+      ) as Card;
 
       // Check if the card fits in the grid
-      if (row + cardData.rows <= totalRows && col + cardData.columns <= totalColumns) {
+      if (
+        row + cardData.rows <= totalRows &&
+        col + cardData.columns <= totalColumns
+      ) {
         // Check for overlaps with existing cards
         const hasOverlap = placedCards.some((placedCard) => {
-          const cardEndRow = placedCard.gridRow + placedCard.rows
-          const cardEndCol = placedCard.gridCol + placedCard.columns
-          const newCardEndRow = row + cardData.rows
-          const newCardEndCol = col + cardData.columns
+          const cardEndRow = placedCard.gridRow + placedCard.rows;
+          const cardEndCol = placedCard.gridCol + placedCard.columns;
+          const newCardEndRow = row + cardData.rows;
+          const newCardEndCol = col + cardData.columns;
 
           return !(
             row >= cardEndRow ||
             newCardEndRow <= placedCard.gridRow ||
             col >= cardEndCol ||
             newCardEndCol <= placedCard.gridCol
-          )
-        })
+          );
+        });
 
         if (!hasOverlap) {
-          onCardPlace(cardData, row, col)
+          const placedCardWithUniqueId = { ...cardData, id: uuidv4() };
+          onCardPlace(placedCardWithUniqueId, row, col);
         }
       }
+      handleCardDoubleClick(cardData.id);
     } catch (error) {
-      console.error("Error parsing dropped card data:", error)
+      console.error("Error parsing dropped card data:", error);
     }
-  }
+  };
 
   const handleCardDoubleClick = (cardId: string) => {
-    onCardRemove(cardId)
-  }
+    onCardRemove(cardId);
+  };
+
+  const handlDragOn = (e: React.DragEvent, card: any) => {
+    e.dataTransfer.setData("application/json", JSON.stringify(card));
+    e.dataTransfer.effectAllowed = "copy";
+  };
 
   // Generate column headers
   const columnHeaders = Array.from({ length: totalColumns }, (_, i) => {
     if (zoomLevel === 1) {
-      return (i % 30) + 1 
+      return (i % 30) + 1;
     } else {
-      const dayOfYear = (i % 365) + 1
-      const year = Math.floor(i / 365) + 1
-      return `Y${year}D${dayOfYear}`
+      const dayOfYear = (i % 365) + 1;
+      const year = Math.floor(i / 365) + 1;
+      return `Y${year}D${dayOfYear}`;
     }
-  })
+  });
 
   return (
     <div className="p-4">
@@ -107,7 +127,9 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
 
             {/* Grid Cells */}
             {Array.from({ length: totalColumns }, (_, colIndex) => {
-              const isDropTarget = dragOverCell?.row === rowIndex && dragOverCell?.col === colIndex
+              const isDropTarget =
+                dragOverCell?.row === rowIndex &&
+                dragOverCell?.col === colIndex;
 
               return (
                 <div
@@ -120,7 +142,7 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
                 />
-              )
+              );
             })}
 
             {/* Placed Cards */}
@@ -128,8 +150,8 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
               .filter((card) => card.gridRow === rowIndex)
               .map((card) => (
                 <div
-                draggable={true}
-                onDragStart={handlDragOn}
+                  draggable={true}
+                  onDragStart={(e) => handlDragOn(e, card)}
                   key={card.id}
                   className="absolute bg-green-100 border-2 border-green-300 rounded shadow-sm cursor-pointer hover:bg-green-200 transition-colors z-20"
                   style={{
@@ -142,7 +164,9 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
                   title="Double-click to remove"
                 >
                   <div className="p-2 h-full flex flex-col justify-center">
-                    <div className="text-xs font-medium text-green-800 truncate">{card.title}</div>
+                    <div className="text-xs font-medium text-green-800 truncate">
+                      {card.title}
+                    </div>
                     <div className="text-xs text-green-600">
                       {card.rows}×{card.columns}
                     </div>
@@ -153,5 +177,5 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
         ))}
       </div>
     </div>
-  )
+  );
 }
