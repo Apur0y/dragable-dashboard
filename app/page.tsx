@@ -15,8 +15,7 @@ export default function Dashboard() {
   ]);
   
  const [barInfo, setBarInfo] = useState([
-    { id: 1, title: "Dashboard Cards" },
-    { id: 2, title: "New Bar" },
+    { id: 1, title: "Dashboard Cards" }
   ])
 
 

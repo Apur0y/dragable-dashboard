@@ -128,6 +128,8 @@ export default function CalendarGrid({ zoomLevel, placedCards, onCardPlace, onCa
               .filter((card) => card.gridRow === rowIndex)
               .map((card) => (
                 <div
+                draggable={true}
+                onDragStart={handlDragOn}
                   key={card.id}
                   className="absolute bg-green-100 border-2 border-green-300 rounded shadow-sm cursor-pointer hover:bg-green-200 transition-colors z-20"
                   style={{
